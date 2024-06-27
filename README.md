@@ -1,5 +1,18 @@
 # data_augmentation_torch
 
+## Usage
+
+## 試作時の各バージョン
+python3
+```sh
+Python 3.10.11
+```
+Pytorch
+```sh
+torch       2.3.1+cu118
+torchvision 0.18.1+cu118
+```
+
 ## TODO
 * フォルダを指定できるようにする
 * フォルダ内のデータをすべて変換できるようにする
