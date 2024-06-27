@@ -74,3 +74,6 @@ boxes = tv_tensors.BoundingBoxes(
 
 # 変換
 img_ts, boxes_ts = transforms(img, boxes)
+
+
+# ファイルに出力する
