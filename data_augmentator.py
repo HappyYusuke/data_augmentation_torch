@@ -1,3 +1,4 @@
+import cv2
 import torch
 from torchvision import tv_tensors
 import torchvision.transforms.v2 as T
@@ -74,3 +75,9 @@ boxes = tv_tensors.BoundingBoxes(
 
 # 変換
 img_ts, boxes_ts = transforms(img, boxes)
+
+
+# 画像を保存
+cv2.imwrite('data_aug/images/img.jpg', img_ts)
+# ラベルを保存
+print(boxes_ts)
