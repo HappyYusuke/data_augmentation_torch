@@ -77,7 +77,11 @@ boxes = tv_tensors.BoundingBoxes(
 img_ts, boxes_ts = transforms(img, boxes)
 
 
+<<<<<<< HEAD
 # 画像を保存
 cv2.imwrite('data_aug/images/img.jpg', img_ts)
 # ラベルを保存
 print(boxes_ts)
+=======
+# ファイルに出力する
+>>>>>>> cc718d9e94a22b9470625029d533133c852000fe
