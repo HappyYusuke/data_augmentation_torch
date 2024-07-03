@@ -2,7 +2,8 @@ import cv2
 import torch
 from torchvision import tv_tensors
 import torchvision.transforms.v2 as T
-from torchvision.io import read_image, ImageReadMode
+from torchvision.utils import draw_bounding_boxes
+from torchvision.io import read_image, ImageReadMode, write_jpeg
 
 
 # 　データ拡張の設定
@@ -13,7 +14,7 @@ transforms = T.Compose([
     T.RandomResizedCrop(size=(600, 600), antialias=True),
     T.RandomPerspective(),
 
-    T.ToDtype(torch.float32, scale=True)
+    T.ToDtype(torch.uint8, scale=True)
 ])
 
 
@@ -61,8 +62,8 @@ with open('labels/laser_img_0.txt') as f:
         
         boxes_list.append([xmin, ymin, xmax, ymax])
 
-print(yolo_format)  # 確認用
-print(boxes_list)   # 使うのはこっち
+#print(yolo_format)  # 確認用
+#print(boxes_list)   # 使うのはこっち
 
 
 # bboxの座標をtorchで使用できるように変換
@@ -73,11 +74,42 @@ boxes = tv_tensors.BoundingBoxes(
 )
 
 
-# 変換
+# 拡張
 img_ts, boxes_ts = transforms(img, boxes)
 
 
-# 画像を保存
-cv2.imwrite('data_aug/images/img.jpg', img_ts)
-# ラベルを保存
+# 画像にbboxを描画
+img_bbox = draw_bounding_boxes(img_ts, boxes_ts, colors="red", width=3)
+
+
+# bboxをxyxyからyoloフォーマットに変換する
+boxes_yolo = []
 print(boxes_ts)
+for xyxy in boxes_ts:
+    xmin = float(xyxy[0])
+    ymin = float(xyxy[1])
+    xmax = float(xyxy[2])
+    ymax = float(xyxy[3])
+    # CXCYWHに変換する
+    cx = (xmax - xmin) / 2
+    cy = (ymax - ymin) / 2
+    w = xmax - xmin
+    h = ymax - ymin
+    # 画像サイズで割る
+    cx = cx/700
+    cy = cy/700
+    w = w/700
+    h = h/700
+    # リストに格納する
+    boxes_yolo.append([cx, cy, w, h])
+print(boxes_yolo)
+
+
+# 画像を保存
+write_jpeg(input=img_ts, filename='data_aug/images/img.jpg')
+write_jpeg(input=img_bbox, filename='data_aug/images/img_bbox.jpg')
+# ラベルを保存
+with open('data_aug/labels/label.txt', mode='w') as f:
+    for bbox_list in boxes_yolo:
+        bbox_string = f"1 {bbox_list[0]} {bbox_list[1]} {bbox_list[2]} {bbox_list[3]}\n"
+        f.write(bbox_string)
