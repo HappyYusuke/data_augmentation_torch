@@ -6,12 +6,12 @@ from torchvision.utils import draw_bounding_boxes
 from torchvision.io import read_image, ImageReadMode, write_jpeg
 
 
-# 　データ拡張の設定
+# データ拡張の設定
 transforms = T.Compose([
     T.ToImage(),
 
     T.RandomRotation(degrees=30),
-    T.RandomResizedCrop(size=(600, 600), antialias=True),
+    T.RandomResizedCrop(size=(700, 700), antialias=True),
     T.RandomPerspective(),
 
     T.ToDtype(torch.uint8, scale=True)
@@ -76,6 +76,7 @@ boxes = tv_tensors.BoundingBoxes(
 
 # 拡張
 img_ts, boxes_ts = transforms(img, boxes)
+print(boxes_ts)
 
 
 # 画像にbboxを描画
@@ -83,33 +84,35 @@ img_bbox = draw_bounding_boxes(img_ts, boxes_ts, colors="red", width=3)
 
 
 # bboxをxyxyからyoloフォーマットに変換する
+img_size = T.functional.get_image_size(img_ts)[0]
 boxes_yolo = []
-print(boxes_ts)
 for xyxy in boxes_ts:
     xmin = float(xyxy[0])
     ymin = float(xyxy[1])
     xmax = float(xyxy[2])
     ymax = float(xyxy[3])
     # CXCYWHに変換する
-    cx = (xmax - xmin) / 2
-    cy = (ymax - ymin) / 2
     w = xmax - xmin
     h = ymax - ymin
+    cx = xmax - (w/2)
+    cy = ymax - (h/2)
     # 画像サイズで割る
-    cx = cx/700
-    cy = cy/700
-    w = w/700
-    h = h/700
+    print(xyxy)
+    print(cx, cy, w, h)
+    cx = round(cx/img_size, 6)
+    cy = round(cy/img_size, 6)
+    w = round(w/img_size, 6)
+    h = round(h/img_size, 6)
     # リストに格納する
     boxes_yolo.append([cx, cy, w, h])
 print(boxes_yolo)
 
 
 # 画像を保存
-write_jpeg(input=img_ts, filename='data_aug/images/img.jpg')
-write_jpeg(input=img_bbox, filename='data_aug/images/img_bbox.jpg')
+write_jpeg(input=img_ts, filename='data_aug/images/img_1.jpg')
+write_jpeg(input=img_bbox, filename='data_aug/bbox_images/img_bbox_1.jpg')
 # ラベルを保存
-with open('data_aug/labels/label.txt', mode='w') as f:
+with open('data_aug/labels/img_1.txt', mode='w') as f:
     for bbox_list in boxes_yolo:
         bbox_string = f"1 {bbox_list[0]} {bbox_list[1]} {bbox_list[2]} {bbox_list[3]}\n"
         f.write(bbox_string)
