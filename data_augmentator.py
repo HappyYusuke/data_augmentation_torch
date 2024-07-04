@@ -13,9 +13,11 @@ from torchvision.io import read_image, ImageReadMode, write_jpeg
 # 保存するファイル名
 SAVE_NAME = "follow_me2024"
 # 読み込むフォルダまでのパス
-IMAGES_PATH = "images"
-LABELS_PATH = "labels"
-# 何枚データ拡張するか
+IMAGES_PATH = "/home/demulab/follow_me_dataset_origin/images"
+LABELS_PATH = "/home/demulab/follow_me_dataset_origin/labels"
+# GPUの設定
+DEVICE = "cuda:0"
+# 何回データ拡張の処理をループするか
 LOOP_NUM = 9
 
 # データ拡張の設定
@@ -31,12 +33,13 @@ transforms = T.Compose([
 
 
 class Augmentator():
-    def __init__(self, save_name, images_path="", labels_path="", loop_num=1):
+    def __init__(self, save_name, images_path="", labels_path="", loop_num=1, device="cuda:0"):
         # 引数
         self.save_name = save_name
         self.images_path = images_path
         self.labels_path = labels_path
         self.loop_num = loop_num
+        self.device = device
         # 値
         self.count = 0
         self.imgs_num = 0
@@ -45,6 +48,17 @@ class Augmentator():
         self.labels_savepath = self.save_dir + "/labels"
         self.bboximages_savepath = self.save_dir + "/bbox_images"
         self.save_fullpath = os.path.dirname(__file__) + "/" + self.save_dir
+
+    def cuda_check(self, device):
+        if torch.cuda.is_available() and "cuda" in device:
+            d_type = device
+            device_name = torch.cuda.get_device_name()
+        else:
+            d_type = device
+            device_name = "cpu"
+        print(f"Use device: {device_name}")
+
+        return torch.device(d_type)
 
     def read_args(self):
         parser = argparse.ArgumentParser(
@@ -167,6 +181,8 @@ class Augmentator():
 
     def augmentation(self):
         empty_files = []
+        # GPUの確認
+        device = self.cuda_check(self.device)
         # 画像とラベルの全パスを取得
         image_paths = self.get_images_path()
         label_paths = self.get_labels_path()
@@ -185,6 +201,7 @@ class Augmentator():
             
             # 画像ファイルの読み込み(チャネル数)
             img = read_image(img_path, ImageReadMode.RGB)
+            img.to(device)
             img_size = T.functional.get_size(img)
             # ラベルの読み込み
             try:
@@ -243,7 +260,6 @@ class Augmentator():
                 print(f" > {empty}")
         print()  # 改行
 
-        print(self.count)
         return self.count
 
     def run(self):
@@ -262,7 +278,8 @@ if __name__ == '__main__':
             save_name=SAVE_NAME,
             images_path=IMAGES_PATH,
             labels_path=LABELS_PATH,
-            loop_num=LOOP_NUM
+            loop_num=LOOP_NUM,
+            device=DEVICE
             )
 
     try:
