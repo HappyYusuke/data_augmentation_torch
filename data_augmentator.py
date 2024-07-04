@@ -18,23 +18,61 @@ LABELS_PATH = "/home/demulab/follow_me_dataset_origin/labels"
 # GPUの設定
 DEVICE = "cuda:0"
 # 何回データ拡張の処理をループするか
-LOOP_NUM = 9
-
+LOOP_NUM = 14
 # データ拡張の設定
-transforms = T.Compose([
-    T.ToImage(),
+TRANSFORMS = [
+        T.Compose([
+            T.ToImage(),
 
-    T.RandomRotation(degrees=30),
-    T.RandomResizedCrop(size=(700, 700), antialias=True),
-    T.RandomPerspective(),
+            
+            # 切り取って指定されたサイズに変更する
+            T.RandomResizedCrop(size=(700, 700), antialias=True),
+            # 水平に反転
+            T.RandomHorizontalFlip(p=0.5),
+            # 鮮鋭化
+            T.RandomAdjustSharpness(sharpness_factor=0 ,p=0.2),
+            T.RandomAdjustSharpness(sharpness_factor=3, p=0.2),
+            T.RandomAdjustSharpness(sharpness_factor=5, p=0.2),
+            # アフィン変換
+            T.RandomAffine(degrees=[-10, 10], translate=(0.2, 0.2), scale=(0.7, 1.5)),
 
-    T.ToDtype(torch.uint8, scale=True)
-    ])
+            T.ToDtype(torch.uint8, scale=True)
+            ]),
+
+        T.Compose([
+            T.ToImage(),
+
+            # 射影変換(pは確率)
+            T.RandomPerspective(p=0.3),
+            # 鮮鋭化
+            T.RandomAdjustSharpness(sharpness_factor=0 ,p=0.2),
+            T.RandomAdjustSharpness(sharpness_factor=3, p=0.2),
+            T.RandomAdjustSharpness(sharpness_factor=5, p=0.2),
+            # 水平に反転
+            T.RandomHorizontalFlip(p=0.5),
+            
+            T.ToDtype(torch.uint8, scale=True)
+            ]),
+
+        T.Compose([
+            T.ToImage(),
+
+            # 回転
+            T.RandomRotation(degrees=20),
+            # アフィン変換
+            T.RandomAffine(degrees=[-10, 10], translate=(0.2, 0.2), scale=(0.7, 1.5)),
+            # 水平に反転
+            T.RandomHorizontalFlip(p=0.5),
+
+            T.ToDtype(torch.uint8, scale=True)
+            ]),
+        ]
 
 
 class Augmentator():
-    def __init__(self, save_name, images_path="", labels_path="", loop_num=1, device="cuda:0"):
+    def __init__(self, transforms=[], save_name="", images_path="", labels_path="", loop_num=1, device="cuda:0"):
         # 引数
+        self.transforms = transforms
         self.save_name = save_name
         self.images_path = images_path
         self.labels_path = labels_path
@@ -173,14 +211,22 @@ class Augmentator():
         
         return good_flg
 
+    def transforms_scheduler(self, loop_num):
+        index_num = len(self.transforms)
+        main_loop_num = int(loop_num/index_num)
+        sub_loop_num = index_num
+        return main_loop_num, sub_loop_num
+
     def interrupted(self):
         print()  # 改行
         print("Interrupted!!!")
         print(f"{self.count+1} images were augmentationed!")
         print(f"Save to {self.save_fullpath}")
 
-    def augmentation(self):
+    def augmentation(self, transforms_index=0):
         empty_files = []
+        # transformsの表示
+        print(self.transforms[transforms_index])
         # GPUの確認
         device = self.cuda_check(self.device)
         # 画像とラベルの全パスを取得
@@ -227,7 +273,7 @@ class Augmentator():
                     )
             
             # 拡張する
-            img_ts, boxes_ts = transforms(img, torch_boxes)
+            img_ts, boxes_ts = self.transforms[transforms_index](img, torch_boxes)
             # 物体が画像になければ保存せず最初から
             if not self.good_data(boxes_ts):
                 continue
@@ -263,10 +309,14 @@ class Augmentator():
         return self.count
 
     def run(self):
-        for num in range(self.loop_num):
-            print(f"Loop count: {num+1}/{self.loop_num}")
-            images_num = self.augmentation()
-            self.imgs_num += abs(images_num - self.imgs_num)
+        main_loop_num, sub_loop_num = self.transforms_scheduler(self.loop_num)
+        count = 1
+        for _ in range(main_loop_num):
+            for transforms_index in range(sub_loop_num):
+                print(f"Loop count: {count}/{self.loop_num}")
+                images_num = self.augmentation(transforms_index=transforms_index)
+                self.imgs_num += abs(images_num - self.imgs_num)
+                count += 1
         
         print("All completed!")
         print(f"{self.imgs_num+1} images were augmentationed!")
@@ -275,6 +325,7 @@ class Augmentator():
 
 if __name__ == '__main__':
     a = Augmentator(
+            transforms=TRANSFORMS,
             save_name=SAVE_NAME,
             images_path=IMAGES_PATH,
             labels_path=LABELS_PATH,
