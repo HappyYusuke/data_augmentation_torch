@@ -19,8 +19,10 @@ LABELS_PATH = "/home/demulab/follow_me_dataset_origin/labels"
 DEVICE = "cuda:0"
 # 何回データ拡張の処理をループするか
 LOOP_NUM = 14
+# 何枚拡張するか
+AUGMENTATION_NUM = 1000
 # データ拡張の設定
-TRANSFORMS = [
+DATA_AUGMENTATION_TRANSFORMS = [
         T.Compose([
             T.ToImage(),
 
@@ -70,15 +72,17 @@ TRANSFORMS = [
 
 
 class Augmentator():
-    def __init__(self, transforms=[], save_name="", images_path="", labels_path="", loop_num=1, device="cuda:0"):
+    def __init__(self, transforms=[], save_name="", images_path="", labels_path="", augmentation_num=None, loop_num=None, device="cuda:0"):
         # 引数
         self.transforms = transforms
         self.save_name = save_name
         self.images_path = images_path
         self.labels_path = labels_path
+        self.augmentation_num = augmentation_num
         self.loop_num = loop_num
         self.device = device
         # 値
+        self.status = 'running'
         self.count = 0
         self.imgs_num = 0
         self.save_dir = "results"
@@ -223,10 +227,7 @@ class Augmentator():
         print(f"{self.count+1} images were augmentationed!")
         print(f"Save to {self.save_fullpath}")
 
-    def augmentation(self, transforms_index=0):
-        empty_files = []
-        # transformsの表示
-        print(self.transforms[transforms_index])
+    def setup(self):
         # GPUの確認
         device = self.cuda_check(self.device)
         # 画像とラベルの全パスを取得
@@ -237,6 +238,15 @@ class Augmentator():
         _, label_dot = self.get_file_name(label_paths[0])
         # 保存先のディレクトリを確認
         self.dir_check()
+        
+        return device, image_paths, label_paths, image_dot, label_dot
+
+    def one_loop_augmentation(self, transforms_index=0, while_bar=None):
+        empty_files = []
+        # transformsの表示
+        print(self.transforms[transforms_index])
+        # 使用するデバイスとパスの確認
+        device, image_paths, label_paths, image_dot, label_dot = self.setup()
         
         # 全ファイルを拡張する
         for img_path in tqdm(image_paths):
@@ -297,6 +307,13 @@ class Augmentator():
                     bbox_string = f"{class_nums[index]} {cx} {cy} {w} {h}\n"
                     f.write(bbox_string)
 
+            # self.while_augmentation()から実行された場合は指定した枚数に達したら終了する
+            if not while_bar is None:
+                while_bar.update(1)
+                if self.augmentation_num <= self.count:
+                    self.status = 'finish'
+                    break
+
             self.count += 1
 
         # ラベル情報がないファイルを出力
@@ -308,16 +325,34 @@ class Augmentator():
 
         return self.count
 
-    def run(self):
+    def loop_augmentation(self):
         main_loop_num, sub_loop_num = self.transforms_scheduler(self.loop_num)
         count = 1
         for _ in range(main_loop_num):
             for transforms_index in range(sub_loop_num):
                 print(f"Loop count: {count}/{self.loop_num}")
-                images_num = self.augmentation(transforms_index=transforms_index)
+                images_num = self.one_loop_augmentation(transforms_index=transforms_index)
                 self.imgs_num += abs(images_num - self.imgs_num)
                 count += 1
-        
+
+    def while_augmentation(self):
+        with tqdm(range(self.augmentation_num)) as pbar:
+            while self.count < self.augmentation_num:
+                for transforms_index in range(len(self.transforms)):
+                    images_num = self.one_loop_augmentation(transforms_index=transforms_index,
+                                                            while_bar=pbar)
+                    self.imgs_num += abs(images_num - self.imgs_num)
+                    if self.status == 'finish':
+                        break
+
+    def run(self):
+        if not self.augmentation_num is None:
+            self.while_augmentation()
+        elif not self.loop_num is None:
+            self.loop_augmentation()
+        else:
+            print("[ERROR]: Set the value to 'augmentation_num' or 'loop_num'")
+
         print("All completed!")
         print(f"{self.imgs_num+1} images were augmentationed!")
         print(f"Save to {self.save_fullpath}")
@@ -325,10 +360,11 @@ class Augmentator():
 
 if __name__ == '__main__':
     a = Augmentator(
-            transforms=TRANSFORMS,
+            transforms=DATA_AUGMENTATION_TRANSFORMS,
             save_name=SAVE_NAME,
             images_path=IMAGES_PATH,
             labels_path=LABELS_PATH,
+            augmentation_num=AUGMENTATION_NUM,
             loop_num=LOOP_NUM,
             device=DEVICE
             )
