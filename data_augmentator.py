@@ -1,6 +1,5 @@
 import os
 import glob
-import argparse
 from tqdm import tqdm
 # データ拡張系
 import torch
@@ -102,22 +101,6 @@ class Augmentator():
         print(f"Use device: {device_name}")
 
         return torch.device(d_type)
-
-    def read_args(self):
-        parser = argparse.ArgumentParser(
-                prog="sample",
-                usage="python3 data_augmentator.py <images_path> <labels_path>",
-                description="Specify the paths to the images and labels directories you wish to expand.",
-                epilog="end",
-                add_help=True,
-                )
-        # 引数の設定
-        parser.add_argument("images_path", type=str, help="Path to images directory.")
-        parser.add_argument("labels_path", type=str, help="Path to labels directory.")
-        # 引数の読み込み
-        args = parser.parse_args()
-        self.images_path = args.images_path
-        self.labels_path = args.labels_path
 
     def get_images_path(self):
         return glob.glob(f"{self.images_path}/*")
