@@ -72,7 +72,7 @@ DATA_AUGMENTATION_TRANSFORMS = [
 
 
 class Augmentator():
-    def __init__(self, transforms=[], save_name="", images_path="", labels_path="", augmentation_num=None, loop_num=None, device="cuda:0"):
+    def __init__(self, transforms=[], save_name="", images_path="", labels_path="", augmentation_num=None, loop_num=None, device="cuda:0", data_check=False):
         # 引数
         self.transforms = transforms
         self.save_name = save_name
@@ -81,9 +81,10 @@ class Augmentator():
         self.augmentation_num = augmentation_num
         self.loop_num = loop_num
         self.device = device
+        self.data_check = data_check
         # 値
         self.status = 'running'
-        self.count = 0
+        self.count = 1
         self.imgs_num = 0
         self.save_dir = "results"
         self.images_savepath = self.save_dir + "/images"
@@ -224,7 +225,7 @@ class Augmentator():
     def interrupted(self):
         print()  # 改行
         print("Interrupted!!!")
-        print(f"{self.count+1} images were augmentationed!")
+        print(f"{self.count} images were augmentationed!")
         print(f"Save to {self.save_fullpath}")
 
     def setup(self):
@@ -285,7 +286,7 @@ class Augmentator():
             # 拡張する
             img_ts, boxes_ts = self.transforms[transforms_index](img, torch_boxes)
             # 物体が画像になければ保存せず最初から
-            if not self.good_data(boxes_ts):
+            if self.data_check and not self.good_data(boxes_ts):
                 continue
 
             # 確認用の画像を生成
@@ -354,7 +355,7 @@ class Augmentator():
             print("[ERROR]: Set the value to 'augmentation_num' or 'loop_num'")
 
         print("All completed!")
-        print(f"{self.imgs_num+1} images were augmentationed!")
+        print(f"{self.imgs_num} images were augmentationed!")
         print(f"Save to {self.save_fullpath}")
 
 
