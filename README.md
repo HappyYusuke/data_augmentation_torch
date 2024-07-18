@@ -155,4 +155,17 @@ pip install -r ~/data_augmentation_torch/requirements.txt
 python3 ~/data_augmentation_torch/main.py
 ```
 
-</br>
+### Step3. 結果の確認
+
+実行した結果は以下のパスに保存されます。</br>
+bbox_imagesの画像は確認用にご使用ください。
+
+<pre>
+data_augmentation_torch
+└── results
+     ├── bbox_images  # 拡張後のバウンディングボックスを描画した画像が保存されます
+     ├── images       # 拡張後の画像データのみが保存されます
+     ├── labels       # 拡張後のラベルデータのみが保存されます
+</pre>
+
+
