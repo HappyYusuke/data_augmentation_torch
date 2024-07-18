@@ -4,12 +4,12 @@ from data_augmentator import *
 # 保存するファイル名
 SAVE_NAME = "laser_img_aug"
 # 読み込むディレクトリまでのパス
-IMAGES_PATH = "/home/demulab/follow_me_dataset_origin/train_val/images"
-LABELS_PATH = "/home/demulab/follow_me_dataset_origin/train_val/labels"
+IMAGES_PATH = "/home/user/path_to/images"
+LABELS_PATH = "/home/user/path_to/labels"
 # GPUの設定
 DEVICE = "cuda:0"
 # 何枚拡張するか
-AUGMENTATION_NUM = 125000 - 11923
+AUGMENTATION_NUM = 1000
 # 拡張後のデータを確認するか
 DATA_CHECK = True
 # データ拡張の設定
