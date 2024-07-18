@@ -1,7 +1,81 @@
 # data_augmentation_torch
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/ce8f4685-fdbe-46f4-a722-ace41159b836" width="700">
+</div>
+
+## Description
+data_augmentation_torchは、バウンディングボックスを考慮したデータ拡張機能を提供するリポジトリです。本リポジトリに含まれる機能は以下の通りです。
+* バウンディングボックスを考慮したデータ拡張
+* 画像、ラベル、拡張後の画像の保存
+* 拡張枚数の指定
+
+⚠️ バウンディングボックスのフォーマットはYOLOのみ対応しています。
+
+</br>
+
+## Requirement
+開発時の各バージョンは以下の通りですが、変更してもかまいません。</br>
+ただし、`torchvision`==0.15系での動作は確認できませんでした。
+
+| 項目 | バージョン |
+| --- | --- |
+| CUDA | 11.8 |
+| Ubuntu | 22.04 |
+| Python | 3.10.11 |
+| torch | 2.3.1 |
+| torchvision | 0.18.1 |
+| tqdm | 4.66.4 |
+
+</br>
 
 ## Installation
 
+<details>
+<summary>⚠️ 仮想環境下での実行を推奨します。</summary>
+  pipenvのインストール
+
+  ```bash
+  pip install pipenv
+  ```
+  
+  ディレクトリの作成
+  
+  ```bash
+  mkdir ~/Project1
+  cd ~/Project1
+  ```
+
+  仮想環境を生成する
+
+  ```bash
+  pipenv
+  ```
+  
+  仮想環境の中に入る
+
+  ```bash
+  pipenv shell
+  ```
+
+</details>
+
+</br>
+
+Python3系のインストールは完了している前提です。
+
+本リポジトリをクローンします。
+
+```bash
+git clone https://github.com/HappyYusuke/data_augmentation_torch.git
+```
+
+必要なパッケージをインストールします。
+
+```bash
+pip install -r ~/data_augmentation_torch/requirements.txt
+```
+
+</br>
 
 ## Usage
 ### Step1. 各種設定
@@ -81,17 +155,8 @@
 python3 ~/data_augmentation_torch/main.py
 ```
 
+</br>
 
-## 試作時の各バージョン
-python3
-```sh
-Python 3.10.11
-```
-Pytorch
-```sh
-torch       2.3.1+cu118
-torchvision 0.18.1+cu118
-```
 
 ## TODO
 * ~~フォルダを指定できるようにする~~
