@@ -9,7 +9,8 @@ data_augmentation_torchは、バウンディングボックスを考慮したデ
 * 画像、ラベル、拡張後の画像の保存
 * 拡張枚数の指定
 
-⚠️ バウンディングボックスのフォーマットはYOLOのみ対応しています。
+> [!WARNING]
+> バウンディングボックスのフォーマットはYOLOのみ対応しています。
 
 </br>
 
@@ -29,6 +30,21 @@ data_augmentation_torchは、バウンディングボックスを考慮したデ
 </br>
 
 ## Installation
+
+Python3系のインストールは完了している前提です。
+
+本リポジトリをクローンします。
+
+```bash
+git clone https://github.com/HappyYusuke/data_augmentation_torch.git
+```
+
+必要なパッケージをインストールします。
+
+```bash
+pip install -r ~/data_augmentation_torch/requirements.txt
+```
+
 > [!TIP]
 > <details><summary> 仮想環境下での実行を推奨します。</summary>
 >  
@@ -56,24 +72,12 @@ data_augmentation_torchは、バウンディングボックスを考慮したデ
 
 </br>
 
-Python3系のインストールは完了している前提です。
-
-本リポジトリをクローンします。
-
-```bash
-git clone https://github.com/HappyYusuke/data_augmentation_torch.git
-```
-
-必要なパッケージをインストールします。
-
-```bash
-pip install -r ~/data_augmentation_torch/requirements.txt
-```
-
-</br>
-
 ## Usage
 ### Step1. 各種設定
+
+パス、GPU、データ拡張の設定を`data_augmentation_torch/main.py`に記述してください。 </br>
+データ拡張の設定はPytorchを使用できます。</br>
+拡張機能についてはこちら 👉 https://pytorch.org/vision/main/transforms.html#v2-api-reference-recommended
 
 > [!NOTE]
 > <details><summary>設定の例</summary>
@@ -140,10 +144,6 @@ pip install -r ~/data_augmentation_torch/requirements.txt
 >  ```
 >
 ></details>
-
-パス、GPU、データ拡張の設定を`data_augmentation_torch/main.py`に記述してください。 </br>
-データ拡張の設定はPytorchを使用できます。</br>
-拡張機能についてはこちら 👉 https://pytorch.org/vision/main/transforms.html#v2-api-reference-recommended
 
 ### Step2. 実行
 設定が完了したら実行します。
