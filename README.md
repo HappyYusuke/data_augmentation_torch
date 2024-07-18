@@ -31,7 +31,7 @@ data_augmentation_torchは、バウンディングボックスを考慮したデ
 
 ## Installation
 
-Python3系のインストールは完了している前提です。
+Python3系とCUDAのインストールは完了している前提です。
 
 本リポジトリをクローンします。
 
