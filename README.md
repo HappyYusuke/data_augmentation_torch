@@ -143,7 +143,7 @@ pip install -r ~/data_augmentation_torch/requirements.txt
 >          ]
 >  ```
 >
-></details>
+> </details>
 
 ### Step2. 実行
 設定が完了したら実行します。
